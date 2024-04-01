@@ -1,0 +1,9 @@
+name = "user-status"
+main = "src/index.ts"
+compatibility_date = "2024-03-29"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "prod"
+database_id = "e686990c-07d0-467f-9545-e408b6ef6ecc"

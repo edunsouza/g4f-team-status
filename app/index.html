@@ -1,0 +1,160 @@
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>G4F - Status Equipe</title>
+
+  <style>
+    body,
+    body * {
+      font-family: "PT Sans", Arial, Tahoma, sans-serif;
+      font-size: 20px;
+      background-color: #F4F4F9;
+      color: #04724D;
+      font-weight: bold;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 36px;
+      color: #04724D;
+      text-transform: uppercase;
+    }
+
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      padding: 5px;
+      border-radius: 5px;
+      border-width: 1px;
+      border-color: #04724D;
+      font-size: 22px;
+    }
+
+    .table {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 80vw;
+    }
+
+    .th,
+    .tr {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px dashed #586F7C;
+      padding: 8px;
+      text-align: left;
+      font-size: 22px;
+    }
+
+    .th {
+      border: none;
+      color: white;
+      background-color: #04724D;
+      text-transform: uppercase;
+      font-size: 22px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Status da Equipe</h1>
+
+    <section id="status-table" class="table"></section>
+  </main>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script type="text/javascript">
+    const API_ROOT = 'https://user-status.jean-quadros-gomes.workers.dev';
+
+    const getUsers = async () => {
+      const response = await fetch(`${API_ROOT}/user_status`);
+      const users = await response.json();
+      return users;
+    };
+
+    const updateUserStatus = async (user, status) => {
+      const response = await fetch(`${API_ROOT}/user_status/${user}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      const users = await response.json();
+      return users;
+    };
+
+    const renderPage = (users) => {
+      const buildings = users.reduce((groups, user) => {
+        groups[user.building] = groups[user.building]?.concat(user) || [user]
+        return groups;
+      }, {});
+
+      const statusOptions = [
+        'Intervalo',
+        'Atendimento Externo Presencial',
+        'Sessão',
+        'Sala de Audiência',
+        'Atendimento Remoto',
+        'Fim da Jornada'
+      ];
+
+      const table = $('#status-table').empty();
+      Object.entries(buildings).forEach(([building, users]) => {
+        // HEADER
+        table.append(`
+          <div class="th">${building}</div>
+          <div class="th">Status</div>
+        `);
+
+        // ROWS
+        users.forEach(({ user, status }) => {
+          table.append(`
+            <div class="tr">${user}</div>
+            <div class="tr">
+              <select class="status-select" data-user="${user}">
+                ${statusOptions.map(option => `
+                  <option ${option === status ? 'selected' : ''}>
+                    ${option}
+                  </option>
+                `).join('')}
+              </select>
+            </div>
+          `);
+        });
+      });
+
+      // ON CHANGE
+      $('.status-select').on('change', async ({ target }) => {
+        const user = target.dataset.user;
+        const status = target.value;
+        const users = await updateUserStatus(user, status);
+        renderPage(users);
+      });
+    };
+
+    // INIT
+    const load = async () => {
+      try {
+        const users = await getUsers();
+        renderPage(users);
+      } catch (error) {
+        alert(error);
+      }
+    };
+
+    load();
+  </script>
+</body>
+
+</html>

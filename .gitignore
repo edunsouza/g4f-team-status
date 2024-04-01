@@ -1,0 +1,16 @@
+node_modules/
+
+service/node_modules/
+service/dist
+service/.env
+service/.env.development.local
+service/.env.test.local
+service/.env.production.local
+service/.env.local
+service/build/Release
+service/logs
+service/npm-debug.log_
+service/.npm
+# wrangler project
+service/.wrangler/
+service/.dev.vars

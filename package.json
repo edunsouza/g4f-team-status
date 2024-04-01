@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "deploy-app": "npx wrangler pages deploy ./app --project-name=g4f-team-status",
+    "deploy-service": "npx wrangler deploy ./service/src/index.ts --minify",
+    "dev": "npx wrangler dev ./service/src/index.ts",
+    "start": "npm run dev"
+  }
+}
