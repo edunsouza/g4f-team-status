@@ -8,10 +8,10 @@
   <style>
     body,
     body * {
-      font-family: "PT Sans", Arial, Tahoma, sans-serif;
+      font-family: Arial, Tahoma, sans-serif;
       font-size: 20px;
       background-color: #F4F4F9;
-      color: #04724D;
+      color: #1D2321;
       font-weight: bold;
     }
 
@@ -25,7 +25,7 @@
     h1 {
       text-align: center;
       font-size: 36px;
-      color: #04724D;
+      color: #1D2321;
       text-transform: uppercase;
     }
 
@@ -33,12 +33,48 @@
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
-      padding: 5px;
+      padding: 5px 10px;
       border-radius: 5px;
       border-width: 1px;
-      border-color: #04724D;
+      border-color: #1D2321;
       font-size: 22px;
       width: fit-content;
+    }
+
+    select.intervalo {
+      background: #ffffff;
+      color: #326e34;
+    }
+
+    select.externo {
+      background: #fdc879;
+      color: #673d00;
+    }
+
+    select.sessao {
+      background: #f7a3a3;
+      color: #ab0c00;
+    }
+
+    select.audiencia {
+      background: rgb(109 6 6);
+      color: rgb(255 255 255);
+    }
+
+    select.remoto {
+      background: #8dd290;
+      color: rgb(34 107 37);
+    }
+
+    select.ferias {
+      background: #f4f4f9;
+      color: #959595;
+      border: 1px solid #959595;
+    }
+
+    select.fim {
+      background: #cacaca;
+      color: #3d3d3d;
     }
 
     .table {
@@ -60,7 +96,7 @@
     .th {
       border: none;
       color: white;
-      background-color: #04724D;
+      background-color: #1D2321;
       text-transform: uppercase;
       font-size: 22px;
       font-weight: bold;
@@ -78,14 +114,35 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script type="text/javascript">
     const API_ROOT = 'https://user-status.jean-quadros-gomes.workers.dev';
+    const IS_DEV = window.location.href.includes('file://') || window.location.href.includes('localhost');
+    const MOCK_USERS = [
+      { user: "Steve Rogers", status: "Intervalo", building: "1432" },
+      { user: "Tony Stark", status: "Atendimento Externo Presencial", building: "1432" },
+      { user: "Thor Odinson", status: "Sessão", building: "1432" },
+      { user: "Bruce Banner", status: "Sala de Audiência", building: "1432" },
+      { user: "Clint Barton", status: "Atendimento Remoto", building: "1432" },
+      { user: "Natasha Romanova", status: "Férias", building: "1432" },
+      { user: "Hank Pym", status: "Fim da Jornada", building: "1100" },
+      { user: "Sam Wilson", status: "Intervalo", building: "1100" },
+      { user: "Marc Spector", status: "Atendimento Externo Presencial", building: "1100" },
+      { user: "Reed Richards", status: "Sessão", building: "1100" },
+      { user: "Peter Parker", status: "Sala de Audiência", building: "1100" }
+    ];
 
     const getUsers = async () => {
+      if (IS_DEV) {
+        return MOCK_USERS;
+      }
       const response = await fetch(`${API_ROOT}/user_status`);
       const users = await response.json();
       return users;
     };
 
     const updateUserStatus = async (user, status) => {
+      if (IS_DEV) {
+        MOCK_USERS.forEach(mock => mock.user === user && (mock.status = status));
+        return MOCK_USERS;
+      }
       const response = await fetch(`${API_ROOT}/user_status/${user}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -101,14 +158,16 @@
         return groups;
       }, {});
 
-      const statusOptions = [
-        'Intervalo',
-        'Atendimento Externo Presencial',
-        'Sessão',
-        'Sala de Audiência',
-        'Atendimento Remoto',
-        'Fim da Jornada'
-      ];
+      const statusClasses = {
+        ['Intervalo']: 'intervalo',
+        ['Atendimento Externo Presencial']: 'externo',
+        ['Sessão']: 'sessao',
+        ['Sala de Audiência']: 'audiencia',
+        ['Atendimento Remoto']: 'remoto',
+        ['Férias']: 'ferias',
+        ['Fim da Jornada']: 'fim'
+      };
+      const statusOptions = Object.keys(statusClasses);
 
       const table = $('#status-table').empty();
       Object.entries(buildings).forEach(([building, users]) => {
@@ -123,9 +182,9 @@
           table.append(`
             <div class="tr">${user}</div>
             <div class="tr">
-              <select class="status-select" data-user="${user}">
+              <select class="status-select ${statusClasses[status]}" data-user="${user}">
                 ${statusOptions.map(option => `
-                  <option ${option === status ? 'selected' : ''}>
+                  <option ${option === status && 'selected'}>
                     ${option}
                   </option>
                 `).join('')}
